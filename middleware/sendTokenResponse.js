@@ -4,7 +4,7 @@ const sendTokenResponse = (user, statusCode, res, emptyToken = false) => {
   }
 
   if (emptyToken) {
-    res.status(statusCode).cookie("token", "").json({
+    res.status(statusCode).clearCookie("token").json({
       success: true,
       data: user,
     });
