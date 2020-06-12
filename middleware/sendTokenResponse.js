@@ -1,4 +1,16 @@
-const sendTokenResponse = (user, statusCode, res) => {
+const sendTokenResponse = (user, statusCode, res, emptyToken = false) => {
+  if (user.password) {
+    delete user.password;
+  }
+
+  if (emptyToken) {
+    res.status(statusCode).cookie("token", "").json({
+      success: true,
+      data: user,
+    });
+    return;
+  }
+
   // Create token
   const token = user.getSignedJWTToken();
 

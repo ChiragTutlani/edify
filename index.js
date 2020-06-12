@@ -2,6 +2,7 @@ require("dotenv").config();
 const express = require("express");
 const connectDB = require("./util/database");
 const userRoutes = require("./routes/user");
+const authRoutes = require("./routes/auth");
 connectDB(process.env.MONGO_URI);
 const app = express();
 const cookierParser = require("cookie-parser");
@@ -12,6 +13,7 @@ app.use(cookierParser());
 app.use(cors());
 
 app.use("/api/v1/user", userRoutes);
+app.use("/api/v1/auth", authRoutes);
 
 app.get("/", (req, res) => {
   res.send("GET /");
