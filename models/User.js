@@ -67,7 +67,7 @@ const User = mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now(),
-    immutable: false,
+    immutable: true,
   },
 });
 
