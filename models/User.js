@@ -2,8 +2,6 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 
-//FIXME include a field with type as array of objectIDs to refer to user's post
-
 const User = mongoose.Schema({
   fullname: {
     type: String,
@@ -69,6 +67,12 @@ const User = mongoose.Schema({
     default: Date.now(),
     immutable: true,
   },
+  posts: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Post",
+    },
+  ],
 });
 
 // Encrpyt password everytime before a document is saved (only if field 'password' is changed)
@@ -92,4 +96,4 @@ User.methods.getSignedJWTToken = function () {
   );
 };
 
-module.exports = mongoose.model("user", User);
+module.exports = mongoose.model("User", User);

@@ -7,7 +7,7 @@ const sendTokenResponse = require("../middleware/sendTokenResponse");
 // @access  Public
 exports.createUser = async (req, res) => {
   try {
-    const user = await User.create(req.body).select("-password");
+    const user = await User.create(req.body);
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
@@ -23,13 +23,14 @@ exports.createUser = async (req, res) => {
 // @access  Private
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find().select("-password");
+    const users = await User.find().populate("posts").select("-password");
 
     res.status(200).json({
       success: true,
       data: users,
     });
   } catch (err) {
+    console.log(err);
     res.status(400).json({
       success: false,
       error: err,
@@ -42,7 +43,9 @@ exports.getUsers = async (req, res) => {
 // @access  Private
 exports.getUser = async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("-password");
+    const user = await User.findById(req.params.id)
+      .populate("posts")
+      .select("-password");
 
     res.status(200).json({
       success: true,
@@ -83,19 +86,19 @@ exports.updateUser = async (req, res) => {
         useFindAndModify: false,
       });
       res.status(200).json({
-        sucess: true,
+        success: true,
         data: user,
       });
     } catch (err) {
       console.log(err);
       res.status(500).json({
-        sucess: false,
+        success: false,
         error: err,
       });
     }
   } else {
     res.status(404).json({
-      sucess: false,
+      success: false,
       error: "Bad request",
     });
   }
@@ -108,12 +111,12 @@ exports.deleteCurrentUser = async (req, res) => {
   try {
     await User.findByIdAndDelete(req.user._id);
     res.status(200).json({
-      sucess: true,
+      success: true,
       data: {},
     });
   } catch (err) {
     res.status(500).json({
-      sucess: false,
+      success: false,
       error: err,
     });
   }

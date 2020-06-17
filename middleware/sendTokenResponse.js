@@ -1,8 +1,4 @@
 const sendTokenResponse = (user, statusCode, res, emptyToken = false) => {
-  if (user.password) {
-    delete user.password;
-  }
-
   if (emptyToken) {
     res.status(statusCode).clearCookie("token").json({
       success: true,
@@ -21,6 +17,12 @@ const sendTokenResponse = (user, statusCode, res, emptyToken = false) => {
 
   if (process.env.NODE_ENV === "production") {
     options.secure = true;
+  }
+
+  if (user.password) {
+    // convert user to JSON object and then remove password field
+    user = user.toJSON();
+    delete user.password;
   }
 
   res.status(statusCode).cookie("token", token, options).json({

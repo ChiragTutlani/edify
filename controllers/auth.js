@@ -9,21 +9,21 @@ exports.login = async (req, res) => {
   try {
     if (!req.body.username || !req.body.password) {
       res.status(404).json({
-        sucess: false,
+        success: false,
         error: "Please enter crediantials",
       });
     }
-    let user = await User.findOne({ username: req.body.username }).select(
-      "+password"
-    );
+    let user = await User.findOne({ username: req.body.username })
+      .populate("posts")
+      .select("+password");
     if (!user) {
-      user = await User.findOne({ email: req.body.username }).select(
-        "+password"
-      );
+      user = await User.findOne({ email: req.body.username })
+        .populate("posts")
+        .select("+password");
     }
     if (!user) {
       res.status(404).json({
-        sucess: false,
+        success: false,
         error: "Invalid crediantials",
       });
     }
@@ -32,13 +32,13 @@ exports.login = async (req, res) => {
       sendTokenResponse(user, 200, res);
     } else {
       res.status(404).json({
-        sucess: false,
+        success: false,
         error: "Invalid crediantials",
       });
     }
   } catch (err) {
     res.status(500).json({
-      sucess: false,
+      success: false,
       error: err,
     });
   }
