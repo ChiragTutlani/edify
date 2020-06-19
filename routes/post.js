@@ -2,6 +2,7 @@ const express = require("express");
 const {
   getPosts,
   getPost,
+  getPostByCategory,
   createPost,
   updatePost,
   deletePost,
@@ -11,6 +12,7 @@ const verifiedUser = require("../middleware/verified");
 const router = express.Router();
 
 router.route("/").get(getPosts).post(protect, verifiedUser, createPost);
+router.route("/category").get(getPostByCategory);
 router
   .route("/:id")
   .get(getPost)

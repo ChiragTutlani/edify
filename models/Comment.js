@@ -29,4 +29,18 @@ const Comment = mongoose.Schema({
   },
 });
 
+Comment.post("save", async function (doc) {
+  const postId = this.post;
+  let post = await Post.findById(postId);
+  post.comments.push(this._id);
+  try {
+    post = await Post.findByIdAndUpdate(postId, post, {
+      runValidators: true,
+      useFindAndModify: false,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 module.exports = mongoose.model("Comment", Comment);

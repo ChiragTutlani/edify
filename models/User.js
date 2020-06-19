@@ -29,7 +29,6 @@ const User = mongoose.Schema({
     type: String,
     select: false,
     required: [true, "Please enter your password"],
-    minLength: 8,
     match: [/[^-\s]/, "Username cannot have space"],
   },
   age: {

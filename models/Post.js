@@ -28,11 +28,17 @@ const Post = mongoose.Schema({
     default: Date.now(),
     immutable: true,
   },
-  tags: {
+  categories: {
     type: [String],
     immutable: true,
-    required: [true, "Please enter tags"],
+    required: [true, "Please enter categories"],
   },
+  comments: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Comment",
+    },
+  ],
 });
 
 Post.post("save", async function (doc) {

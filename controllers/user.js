@@ -1,5 +1,7 @@
 const User = require("../models/User");
 const bcrypt = require("bcryptjs");
+const transporter = require("../util/emailTransporter");
+const verificationHTML = require("../util/verificationHTML");
 const sendTokenResponse = require("../middleware/sendTokenResponse");
 
 // @desc  Create an user
@@ -7,10 +9,31 @@ const sendTokenResponse = require("../middleware/sendTokenResponse");
 // @access  Public
 exports.createUser = async (req, res) => {
   try {
+    if (req.body.password !== req.body.password2) {
+      res.status(400).json({
+        success: false,
+        error: "Passwords do not match",
+      });
+      return;
+    }
+
     const user = await User.create(req.body);
+
+    const url = `${process.env.URL}/api/v1/user/verify/${user._id}`;
+    const message = {
+      from: process.env.EMAIL_ID,
+      to: req.body.email,
+      subject: "Verify your account at Edify",
+      html: verificationHTML(url),
+    };
+    await transporter.sendMail(message);
 
     sendTokenResponse(user, 200, res);
   } catch (err) {
+    if (user) {
+      await User.findByIdAndRemove(user._id);
+    }
+
     res.status(400).json({
       success: false,
       error: err,
@@ -23,7 +46,7 @@ exports.createUser = async (req, res) => {
 // @access  Private
 exports.getUsers = async (req, res) => {
   try {
-    const users = await User.find().populate("posts").select("-password");
+    const users = await User.find().select("-password");
 
     res.status(200).json({
       success: true,
@@ -78,6 +101,20 @@ exports.updateUser = async (req, res) => {
   if (user) {
     try {
       if (req.body.password) {
+        if (req.params.id.toString() !== req.user._id.toString()) {
+          res.status(400).json({
+            success: false,
+            error: "Unauthorized request",
+          });
+          return;
+        }
+        if (req.body.password !== req.body.password2) {
+          res.status(400).json({
+            success: false,
+            error: "Passwords do not match",
+          });
+          return;
+        }
         req.body.password = bcrypt.hashSync(req.body.password, 10);
       }
       user = await User.findByIdAndUpdate(req.params.id, req.body, {
@@ -113,6 +150,34 @@ exports.deleteCurrentUser = async (req, res) => {
     res.status(200).json({
       success: true,
       data: {},
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err,
+    });
+  }
+};
+
+// @desc  Verify user
+// @route GET /api/v1/user/verify/:id
+// @access  Public
+exports.verifyUser = async (req, res) => {
+  try {
+    let user = await User.findById(req.params.id);
+
+    user.verified = true;
+
+    user = await User.findByIdAndUpdate(req.params.id, user, {
+      new: true,
+      runValidators: true,
+      useFindAndModify: false,
+    });
+
+    //FIXME respond with an html page
+    res.status(200).json({
+      success: true,
+      data: user,
     });
   } catch (err) {
     res.status(500).json({

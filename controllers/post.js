@@ -23,7 +23,32 @@ exports.getPosts = async (req, res) => {
 // @access  Public
 exports.getPost = async (req, res) => {
   try {
-    const post = await Post.findById(req.params.id).populate("author");
+    const post = await Post.findById(req.params.id)
+      .populate("author")
+      .populate("comments");
+    res.status(200).json({
+      success: true,
+      data: post,
+    });
+  } catch (err) {
+    res.status(500).json({
+      success: false,
+      error: err,
+    });
+  }
+};
+
+// @desc  Get post by category
+// @route GET /api/v1/post/category
+// @access  Public
+exports.getPostByCategory = async (req, res) => {
+  try {
+    const categories = req.body.categories;
+    const post = await Post.find({
+      categories: {
+        $in: categories,
+      },
+    }).populate("author");
     res.status(200).json({
       success: true,
       data: post,
@@ -40,16 +65,8 @@ exports.getPost = async (req, res) => {
 // @route POST /api/v1/post
 // @access  Private
 exports.createPost = async (req, res) => {
-  if (req.user._id.toString() !== req.body.author) {
-    console.log("Author does not match");
-    res.status(401).json({
-      success: false,
-      error: "Unauthorized request",
-    });
-    return;
-  }
-
   try {
+    req.body.author = req.user._id;
     const post = await Post.create(req.body);
     res.status(200).json({
       success: true,
